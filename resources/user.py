@@ -43,7 +43,7 @@ class LogIn(MethodView):
             refresh_token = create_refresh_token(identity=user.id)
             return jsonify(
                 {
-                    "jws_token": access_token,
+                    "jwt_token": access_token,
                     "refresh_token": refresh_token
                 }
             )
