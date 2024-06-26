@@ -5,8 +5,9 @@ from flask_smorest import Blueprint, abort
 from schemas import UserSchema
 from passlib.hash import pbkdf2_sha256
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from flask_jwt_extended import create_access_token, get_jwt, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt, jwt_required, create_refresh_token
 from blocklist import BLOCKLIST
+from flask import jsonify
 
 blp = Blueprint("User", "user", "Operations related to User")
 
@@ -38,8 +39,14 @@ class LogIn(MethodView):
             UserModel.username == user_data["username"]
         ).first()
         if user and pbkdf2_sha256.verify(user_data["password"], user.password):
-            access_token = create_access_token(identity=user.id)
-            return {"jws_token" : access_token}
+            access_token = create_access_token(identity=user.id, fresh=True)
+            refresh_token = create_refresh_token(identity=user.id)
+            return jsonify(
+                {
+                    "jws_token": access_token,
+                    "refresh_token": refresh_token
+                }
+            )
         abort(401, message="Invalid credentials")
 
 
